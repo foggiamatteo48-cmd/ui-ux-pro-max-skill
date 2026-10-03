@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NOVA – GPS nouvelle génération pour chiens et chats</title>
+  <meta name="description" content="NOVA : le traceur GPS nouvelle génération pour chiens et chats. Localisez, suivez et protégez votre compagnon où qu'il aille. Jusqu'à 7 jours d'autonomie, IP67, alertes instantanées.">
+  <meta name="theme-color" content="#121212">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23121212'/%3E%3Ccircle cx='24' cy='24' r='5' fill='%23fff'/%3E%3Ccircle cx='40' cy='24' r='5' fill='%23fff'/%3E%3Ccircle cx='16' cy='34' r='4' fill='%23fff'/%3E%3Ccircle cx='48' cy='34' r='4' fill='%23fff'/%3E%3Cpath d='M20 48c0-7 5-11 12-11s12 4 12 11c0 3-2 4-4 4H24c-2 0-4-1-4-4z' fill='%23fff'/%3E%3C/svg%3E">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream: '#F4F1EA',
+            sand: '#E9E4D6',
+            paper: '#FBFAF6',
+            ink: '#121212',
+            graphite: '#2A2A28',
+            stone: '#5C5B53',
+            olive: '#7C7A4C',
+            'olive-light': '#A6A46F',
+            sage: '#5DA66B',
+            'sage-dark': '#3F8A4D',
+            amber: '#D98B3A',
+          },
+          fontFamily: {
+            heading: ['Manrope', 'system-ui', 'sans-serif'],
+            body: ['Inter', 'system-ui', 'sans-serif'],
+            hand: ['Caveat', 'cursive'],
+          },
+          boxShadow: {
+            soft: '0 10px 40px -12px rgba(18,18,18,.18)',
+            lift: '0 30px 60px -20px rgba(18,18,18,.35)',
+            glass: '0 20px 50px -20px rgba(0,0,0,.45)',
+          },
+          borderRadius: { '4xl': '2rem', '5xl': '2.5rem' },
+          keyframes: {
+            float: { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-12px)' } },
+            ping2: { '0%': { transform: 'scale(.6)', opacity: '.8' }, '100%': { transform: 'scale(2.4)', opacity: '0' } },
+            marquee: { '0%': { transform: 'translateX(0)' }, '100%': { transform: 'translateX(-50%)' } },
+            shine: { '0%': { transform: 'translateX(-120%)' }, '100%': { transform: 'translateX(220%)' } },
+          },
+          animation: {
+            float: 'float 6s ease-in-out infinite',
+            'float-slow': 'float 9s ease-in-out infinite',
+            ping2: 'ping2 2s cubic-bezier(.2,.7,.3,1) infinite',
+            marquee: 'marquee 30s linear infinite',
+          },
+        }
+      }
+    }
+  </script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+      }
+    }
+  </script>
+  <style>
+    :root { --device: #141414; --device-glow: rgba(20,20,20,.35); }
+    html { scroll-behavior: smooth; }
+    body { background: #F4F1EA; }
+    ::selection { background: #121212; color: #F4F1EA; }
+
+    .h-display { letter-spacing: -0.035em; line-height: .98; }
+    .h-section { letter-spacing: -0.03em; line-height: 1.05; }
+
+    /* Buttons */
+    .btn { display:inline-flex; align-items:center; justify-content:center; gap:.6rem; font-weight:700; border-radius:9999px; padding:.95rem 1.6rem; transition: transform .2s ease, box-shadow .2s ease, background .2s ease, color .2s ease; cursor:pointer; position:relative; overflow:hidden; white-space:nowrap; }
+    .btn:active { transform: translateY(1px) scale(.985); }
+    .btn-dark { background:#121212; color:#F4F1EA; box-shadow: 0 14px 30px -12px rgba(18,18,18,.6); }
+    .btn-dark:hover { background:#2A2A28; transform: translateY(-2px); box-shadow: 0 20px 40px -14px rgba(18,18,18,.6); }
+    .btn-dark .arrow { transition: transform .25s ease; }
+    .btn-dark:hover .arrow { transform: translateX(4px); }
+    .btn-outline { background: rgba(255,255,255,.55); color:#121212; border:1.5px solid rgba(18,18,18,.35); backdrop-filter: blur(8px); }
+    .btn-outline:hover { background:#fff; border-color:#121212; transform: translateY(-2px); }
+    .btn-light { background:#F4F1EA; color:#121212; }
+    .btn-light:hover { background:#fff; transform: translateY(-2px); }
+    .btn-sage { background:#5DA66B; color:#fff; box-shadow: 0 14px 30px -12px rgba(93,166,107,.6); }
+    .btn-sage:hover { background:#3F8A4D; transform: translateY(-2px); }
+    .btn-shine::after { content:''; position:absolute; top:0; bottom:0; width:40%; background: linear-gradient(100deg, transparent, rgba(255,255,255,.22), transparent); transform: translateX(-120%); }
+    .btn-shine:hover::after { animation: shine .9s ease; }
+    .btn:focus-visible, a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px solid #5DA66B; outline-offset: 3px; }
+
+    /* Cards */
+    .card { background:#fff; border-radius:1.5rem; border:1px solid rgba(18,18,18,.06); box-shadow: 0 10px 40px -12px rgba(18,18,18,.12); transition: transform .3s ease, box-shadow .3s ease; }
+    .card-hover:hover { transform: translateY(-6px); box-shadow: 0 30px 60px -20px rgba(18,18,18,.3); }
+    .glass { background: rgba(255,255,255,.78); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border:1px solid rgba(255,255,255,.7); box-shadow: 0 20px 50px -20px rgba(0,0,0,.35); }
+    .glass-dark { background: rgba(18,18,18,.72); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border:1px solid rgba(255,255,255,.1); color:#F4F1EA; }
+    .icon-dot { width:3.5rem; height:3.5rem; border-radius:9999px; background:#E9E4D6; display:grid; place-items:center; color:#121212; transition: transform .25s ease, background .25s ease; }
+    .feature:hover .icon-dot { transform: translateY(-4px) scale(1.05); background:#121212; color:#F4F1EA; }
+    .eyebrow { font-size:.74rem; letter-spacing:.16em; text-transform:uppercase; font-weight:700; color:#5C5B53; }
+
+    /* Nav */
+    .nav-link { position:relative; font-weight:600; font-size:.95rem; color:#2A2A28; transition: color .2s; padding:.25rem 0; }
+    .nav-link:hover, .nav-link.active { color:#121212; }
+    .nav-link::after { content:''; position:absolute; left:0; right:0; bottom:-4px; height:2px; border-radius:9999px; background:#121212; transform: scaleX(0); transform-origin:left; transition: transform .25s ease; }
+    .nav-link:hover::after, .nav-link.active::after { transform: scaleX(1); }
+    #nav.scrolled .nav-shell { background: rgba(244,241,234,.88); box-shadow: 0 10px 30px -15px rgba(18,18,18,.25); border-color: rgba(18,18,18,.08); }
+    .nav-shell { transition: background .3s, box-shadow .3s, border-color .3s; border:1px solid transparent; }
+
+    /* Hero landscape */
+    .sky { background: linear-gradient(180deg, #F6EFE2 0%, #EDD9BF 45%, #D9BC98 100%); }
+    .hero-vignette { background: radial-gradient(70% 60% at 50% 100%, rgba(18,18,18,.35), transparent 70%); }
+
+    /* Device CSS illustration (fallback & product cards) */
+    .device { position:relative; width:220px; height:132px; border-radius:40px; background: linear-gradient(150deg, color-mix(in srgb, var(--device) 70%, #fff) 0%, var(--device) 45%, color-mix(in srgb, var(--device) 85%, #000) 100%); box-shadow: 0 35px 50px -20px rgba(0,0,0,.55), inset 0 -10px 18px rgba(0,0,0,.35), inset 0 6px 14px rgba(255,255,255,.18); }
+    .device::before { content:''; position:absolute; top:12px; left:40px; right:40px; height:28px; border-radius:14px 14px 4px 4px; background: linear-gradient(180deg, color-mix(in srgb, var(--device) 55%, #fff), color-mix(in srgb, var(--device) 85%, #000)); opacity:.9; }
+    .device .brand { position:absolute; left:0; right:0; top:52px; text-align:center; font-family: Manrope, sans-serif; font-weight:800; letter-spacing:.22em; font-size:22px; color: var(--device-text, #d9d9d9); }
+    .device .led { position:absolute; left:50%; top:92px; width:36px; height:4px; margin-left:-18px; border-radius:9999px; background:#fff; box-shadow: 0 0 12px #fff, 0 0 24px rgba(255,255,255,.7); }
+    .device .side { position:absolute; right:-8px; top:40px; width:14px; height:54px; border-radius:7px; background: color-mix(in srgb, var(--device) 80%, #000); box-shadow: inset 0 2px 4px rgba(255,255,255,.15); }
+
+    /* Swatches */
+    .swatch { width:2.4rem; height:2.4rem; border-radius:9999px; border:3px solid #fff; box-shadow: 0 6px 16px -6px rgba(0,0,0,.4), 0 0 0 1.5px rgba(18,18,18,.15); cursor:pointer; transition: transform .2s ease, box-shadow .2s ease; }
+    .swatch:hover { transform: scale(1.1); }
+    .swatch.active { transform: scale(1.12); box-shadow: 0 6px 16px -6px rgba(0,0,0,.4), 0 0 0 2.5px #121212; }
+    .swatch-sm { width:1.5rem; height:1.5rem; border-width:2px; }
+
+    /* 3D canvas */
+    #hero-3d canvas { display:block; width:100% !important; height:100% !important; cursor: grab; touch-action: pan-y; }
+    #hero-3d canvas:active { cursor: grabbing; }
+
+    /* Phone */
+    .phone { width: 290px; height: 590px; border-radius: 46px; background:#0d0f12; padding: 11px; box-shadow: 0 50px 90px -30px rgba(18,18,18,.65), inset 0 0 0 2px #3a3d42; }
+    .phone-screen { width:100%; height:100%; border-radius: 36px; overflow:hidden; background:#F4F1EA; position:relative; color:#121212; }
+    .phone-notch { position:absolute; top:10px; left:50%; transform:translateX(-50%); width:100px; height:26px; border-radius:9999px; background:#0d0f12; z-index:10; }
+    .map { background:
+      radial-gradient(400px 220px at 70% 30%, rgba(93,166,107,.25), transparent 60%),
+      linear-gradient(0deg, rgba(0,0,0,.035) 1px, transparent 1px) 0 0/22px 22px,
+      linear-gradient(90deg, rgba(0,0,0,.035) 1px, transparent 1px) 0 0/22px 22px,
+      linear-gradient(160deg,#E8EDDC,#D7E3CB 60%,#E6E2D2); }
+    .bar { background: linear-gradient(180deg,#5DA66B,#3F8A4D); border-radius:4px 4px 2px 2px; transform-origin: bottom; }
+    .toggle { width:44px; height:26px; border-radius:9999px; background:#121212; position:relative; }
+    .toggle::after { content:''; position:absolute; top:3px; right:3px; width:20px; height:20px; border-radius:9999px; background:#fff; }
+
+    /* Callouts */
+    .callout { font-family: Caveat, cursive; font-size:1.35rem; font-weight:600; color:#F4F1EA; line-height:1.1; max-width:45%; }
+    @media (max-width: 640px) { .callout { font-size:1.05rem; } }
+
+    /* Compare / tables */
+    .tbl td, .tbl th { padding:.9rem .75rem; }
+    .tbl tbody tr { border-top:1px solid rgba(18,18,18,.08); }
+
+    /* FAQ */
+    details summary::-webkit-details-marker { display:none; }
+    details[open] .faq-icon { transform: rotate(45deg); }
+    .faq-icon { transition: transform .25s ease; }
+
+    /* Marquee */
+    .marquee-mask { mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+
+    /* Drawer & toast */
+    #cart-drawer { transform: translateX(100%); transition: transform .4s cubic-bezier(.2,.7,.2,1); }
+    #cart-drawer.open { transform: translateX(0); }
+    #cart-backdrop { opacity:0; pointer-events:none; transition: opacity .3s; }
+    #cart-backdrop.open { opacity:1; pointer-events:auto; }
+    #toast { transform: translateY(160%); transition: transform .4s cubic-bezier(.2,.7,.2,1); }
+    #toast.show { transform: translateY(0); }
+    #progress { transform-origin:left; transform: scaleX(0); }
+
+    .plan-toggle button.active { background:#121212; color:#F4F1EA; }
+    .star { color:#D98B3A; }
+    .hide-scroll::-webkit-scrollbar { display:none; }
+    .hide-scroll { scrollbar-width:none; }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body class="bg-cream font-body text-ink antialiased overflow-x-hidden">
+
+  <div id="progress" class="fixed top-0 left-0 right-0 h-[3px] bg-ink z-[70]"></div>
+
+  <!-- Announcement -->
+  <div class="bg-ink text-cream text-[13px] text-center py-2.5 px-4 font-medium tracking-wide">
+    Livraison offerte dès 59 € · 2–4 jours en France · Satisfait ou remboursé 30 jours · Garantie 2 ans
+  </div>
+
+  <!-- Navbar -->
+  <header id="nav" class="sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+      <div class="nav-shell mt-3 rounded-full flex items-center justify-between gap-4 px-4 sm:px-6 py-2.5">
+        <a href="#top" class="flex flex-col leading-none cursor-pointer" aria-label="NOVA, accueil">
+          <span class="font-heading font-800 text-[26px] tracking-[.22em] font-extrabold">NOVA</span>
+          <span class="text-[9px] tracking-[.18em] uppercase text-stone -mt-0.5 hidden sm:block">Pour ceux qui vont plus loin</span>
+        </a>
+        <nav class="hidden lg:flex items-center gap-8" aria-label="Navigation principale">
+          <a href="#produit" class="nav-link">Produit</a>
+          <a href="#app" class="nav-link">Application</a>
+          <a href="#fonctionnalites" class="nav-link">Fonctionnalités</a>
+          <a href="#guide" class="nav-link">Guide</a>
+          <a href="#avis" class="nav-link">Avis</a>
+          <a href="#faq" class="nav-link">FAQ</a>
+        </nav>
+        <div class="flex items-center gap-2 sm:gap-3">
+          <button id="open-cart" class="relative w-11 h-11 rounded-full hover:bg-sand transition grid place-items-center cursor-pointer" aria-label="Ouvrir le panier">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+            <span id="cart-count" class="absolute -top-0.5 -right-0.5 min-w-[20px] h-5 px-1 rounded-full bg-sage text-white text-[11px] font-bold grid place-items-center scale-0 transition-transform">0</span>
+          </button>
+          <span class="hidden sm:block"><a href="#offre" class="btn btn-dark btn-shine !py-2.5 !px-5 text-sm">Commander <span class="arrow">→</span></a></span>
+          <button id="menu-btn" class="lg:hidden w-11 h-11 rounded-full hover:bg-sand grid place-items-center cursor-pointer" aria-label="Menu" aria-expanded="false" aria-controls="mobile-menu">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+          </button>
+        </div>
+      </div>
+      <div id="mobile-menu" class="lg:hidden hidden mt-2 card p-3 flex flex-col gap-1 bg-paper">
+        <a href="#produit" class="px-4 py-3 rounded-xl hover:bg-sand font-semibold">Produit</a>
+        <a href="#app" class="px-4 py-3 rounded-xl hover:bg-sand font-semibold">Application</a>
+        <a href="#fonctionnalites" class="px-4 py-3 rounded-xl hover:bg-sand font-semibold">Fonctionnalités</a>
+        <a href="#guide" class="px-4 py-3 rounded-xl hover:bg-sand font-semibold">Guide</a>
+        <a href="#avis" class="px-4 py-3 rounded-xl hover:bg-sand font-semibold">Avis</a>
+        <a href="#faq" class="px-4 py-3 rounded-xl hover:bg-sand font-semibold">FAQ</a>
+        <a href="#offre" class="btn btn-dark mt-2">Commander →</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+
+    <!-- ========== HERO ========== -->
+    <section class="relative -mt-[76px] pt-[76px] overflow-hidden" aria-labelledby="hero-title">
+      <!-- Landscape background -->
+      <div class="absolute inset-0 sky" aria-hidden="true"></div>
+      <svg class="absolute bottom-0 left-0 w-full h-[62%] pointer-events-none" viewBox="0 0 1440 520" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="m1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B9A585"/><stop offset="1" stop-color="#8E7C5E"/></linearGradient>
+          <linearGradient id="m2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7E7756"/><stop offset="1" stop-color="#55513A"/></linearGradient>
+          <linearGradient id="m3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3E3C2E"/><stop offset="1" stop-color="#1E1D18"/></linearGradient>
+        </defs>
+        <path class="mtn mtn-1" fill="url(#m1)" d="M0 300 L120 230 L260 280 L390 170 L520 250 L660 190 L800 260 L930 150 L1070 240 L1200 200 L1320 260 L1440 210 L1440 520 L0 520Z" opacity=".9"/>
+        <path class="mtn mtn-2" fill="url(#m2)" d="M0 360 L140 300 L300 350 L420 280 L560 340 L700 290 L840 350 L980 270 L1120 340 L1260 300 L1440 350 L1440 520 L0 520Z"/>
+        <path class="mtn mtn-3" fill="url(#m3)" d="M0 440 L160 400 L320 430 L480 380 L640 430 L800 390 L960 440 L1120 400 L1280 440 L1440 410 L1440 520 L0 520Z"/>
+      </svg>
+      <div class="absolute inset-x-0 bottom-0 h-64 hero-vignette pointer-events-none" aria-hidden="true"></div>
+
+      <div class="relative max-w-7xl mx-auto px-4 sm:px-6 pt-10 sm:pt-16 lg:pt-20 pb-24 lg:pb-32 grid lg:grid-cols-12 gap-10 lg:gap-6 items-center">
+        <!-- Copy -->
+        <div class="lg:col-span-6 relative z-10">
+          <div class="hero-reveal inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/70 backdrop-blur border border-ink/10 text-xs font-semibold text-graphite mb-6">
+            <span class="relative flex w-2 h-2"><span class="absolute inline-flex w-full h-full rounded-full bg-sage animate-ping2"></span><span class="relative inline-flex w-2 h-2 rounded-full bg-sage"></span></span>
+            Nouvelle génération · Chiens & chats
+          </div>
+          <h1 id="hero-title" class="hero-reveal font-heading font-extrabold h-display text-[clamp(2.9rem,7.5vw,6.2rem)] text-ink">
+            Aventurez<br><span class="text-olive">sans limites.</span>
+          </h1>
+          <p class="hero-reveal mt-6 text-lg sm:text-xl text-graphite/90 max-w-lg leading-relaxed">
+            Le GPS nouvelle génération pour chiens et chats. Localisez, suivez et protégez votre compagnon où qu'il aille.
+          </p>
+          <div class="hero-reveal mt-8 flex flex-wrap gap-3">
+            <a href="#offre" class="btn btn-dark btn-shine">Commander maintenant <span class="arrow">→</span></a>
+            <a href="#app" class="btn btn-outline">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              Voir la démo
+            </a>
+          </div>
+          <ul class="hero-reveal mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm font-medium text-graphite">
+            <li class="flex items-center gap-3"><span class="w-9 h-9 rounded-full bg-white/70 grid place-items-center shrink-0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg></span>Livraison 2–4 jours<br>en France</li>
+            <li class="flex items-center gap-3"><span class="w-9 h-9 rounded-full bg-white/70 grid place-items-center shrink-0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg></span>Satisfait ou remboursé<br>30 jours</li>
+            <li class="flex items-center gap-3"><span class="w-9 h-9 rounded-full bg-white/70 grid place-items-center shrink-0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></span>Déjà plus de<br>10 000 animaux suivis</li>
+          </ul>
+        </div>
+
+        <!-- 3D product -->
+        <div class="lg:col-span-6 relative">
+          <div class="relative mx-auto max-w-[560px] aspect-[4/4.2] sm:aspect-square">
+            <div class="absolute inset-0 rounded-[3rem] bg-white/25 backdrop-blur-[2px] border border-white/40"></div>
+            <div id="hero-3d" class="absolute inset-0 rounded-[3rem] overflow-hidden" aria-live="polite">
+              <!-- Fallback device illustration (hidden when WebGL loads) -->
+              <div id="device-fallback" class="absolute inset-0 grid place-items-center">
+                <div class="device animate-float" style="--device:#141414"><div class="brand">NOVA</div><div class="led"></div><div class="side"></div></div>
+              </div>
+            </div>
+
+            <!-- Floating live card -->
+            <div class="hero-float absolute -left-2 sm:-left-6 top-6 glass rounded-2xl p-3 pr-4 flex items-center gap-3 animate-float" style="animation-delay:.6s">
+              <div class="relative w-11 h-11 rounded-full bg-gradient-to-br from-amber to-olive grid place-items-center text-white font-heading font-extrabold">R
+                <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-sage border-2 border-white"></span>
+              </div>
+              <div class="leading-tight">
+                <div class="font-semibold text-sm">Rocky <span class="ml-2 text-[11px] font-bold text-sage-dark bg-sage/15 px-1.5 py-0.5 rounded-md">84 %</span></div>
+                <div class="text-xs text-stone">En mouvement · il y a <span id="live-seconds">12</span> s</div>
+              </div>
+            </div>
+
+            <!-- Floating stats -->
+            <div class="hero-float absolute -right-2 sm:-right-6 bottom-20 glass rounded-2xl px-4 py-3 grid grid-cols-3 gap-4 text-center animate-float-slow">
+              <div><div class="font-heading font-extrabold text-lg leading-none"><span data-count="12">0</span><span class="text-xs font-semibold text-stone"> km/h</span></div><div class="text-[11px] text-stone mt-1">Vitesse</div></div>
+              <div><div class="font-heading font-extrabold text-lg leading-none"><span data-count="320">0</span><span class="text-xs font-semibold text-stone"> m</span></div><div class="text-[11px] text-stone mt-1">Distance</div></div>
+              <div><div class="font-heading font-extrabold text-lg leading-none">1h<span data-count="24">0</span></div><div class="text-[11px] text-stone mt-1">Activité</div></div>
+            </div>
+
+            <!-- Color picker -->
+            <div class="absolute left-1/2 -translate-x-1/2 bottom-3 glass rounded-full px-4 py-2.5 flex items-center gap-3">
+              <span class="text-xs font-semibold text-stone hidden sm:inline">Couleur</span>
+              <div id="hero-swatches" class="flex items-center gap-2" role="radiogroup" aria-label="Couleur du tracker">
+                <button class="swatch active" style="background:#141414" data-color="#141414" data-name="Noir" data-text="#d9d9d9" role="radio" aria-checked="true" aria-label="Noir"></button>
+                <button class="swatch" style="background:#EDE6D6" data-color="#EDE6D6" data-name="Crème" data-text="#2a2a28" role="radio" aria-checked="false" aria-label="Crème"></button>
+                <button class="swatch" style="background:#7C7A4C" data-color="#7C7A4C" data-name="Olive" data-text="#f4f1ea" role="radio" aria-checked="false" aria-label="Olive"></button>
+                <button class="swatch" style="background:#C96A3B" data-color="#C96A3B" data-name="Terracotta" data-text="#fff3e8" role="radio" aria-checked="false" aria-label="Terracotta"></button>
+              </div>
+              <span id="color-name" class="text-xs font-bold min-w-[64px] text-right">Noir</span>
+            </div>
+            <p class="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[11px] text-graphite/70 whitespace-nowrap">Faites glisser pour tourner le tracker</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== FEATURES BAR ========== -->
+    <section id="fonctionnalites" class="relative bg-sand/70 border-y border-ink/5" aria-label="Fonctionnalités clés">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+        <ul class="features grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-6">
+          <li class="feature flex flex-col items-center text-center gap-3 reveal"><span class="icon-dot"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg></span><span class="text-sm font-semibold leading-snug">Localisation GPS<br>ultra précise</span></li>
+          <li class="feature flex flex-col items-center text-center gap-3 reveal"><span class="icon-dot"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg></span><span class="text-sm font-semibold leading-snug">Zones de sécurité<br>personnalisables</span></li>
+          <li class="feature flex flex-col items-center text-center gap-3 reveal"><span class="icon-dot"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg></span><span class="text-sm font-semibold leading-snug">Alertes instantanées<br>sur votre téléphone</span></li>
+          <li class="feature flex flex-col items-center text-center gap-3 reveal"><span class="icon-dot"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span><span class="text-sm font-semibold leading-snug">Suivi d'activité<br>et de bien-être</span></li>
+          <li class="feature flex flex-col items-center text-center gap-3 reveal"><span class="icon-dot"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span class="text-sm font-semibold leading-snug">Partage avec<br>toute la famille</span></li>
+          <li class="feature flex flex-col items-center text-center gap-3 reveal"><span class="icon-dot"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="10" x="2" y="7" rx="2" ry="2"/><line x1="22" x2="22" y1="11" y2="13"/><line x1="6" x2="6" y1="11" y2="13"/><line x1="10" x2="10" y1="11" y2="13"/><line x1="14" x2="14" y1="11" y2="13"/></svg></span><span class="text-sm font-semibold leading-snug">Jusqu'à 7 jours<br>d'autonomie</span></li>
+          <li class="feature flex flex-col items-center text-center gap-3 reveal"><span class="icon-dot"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg></span><span class="text-sm font-semibold leading-snug">Résistant à l'eau<br>IP67</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ========== PRODUCT + APP ========== -->
+    <section id="produit" class="max-w-7xl mx-auto px-4 sm:px-6 py-20 lg:py-28 grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
+      <!-- Product showcase with callouts -->
+      <div class="reveal relative rounded-[2.5rem] overflow-hidden bg-graphite aspect-[4/3.6] sm:aspect-[4/3.3] shadow-lift">
+        <div class="absolute inset-0" style="background: radial-gradient(60% 50% at 70% 20%, rgba(217,139,58,.35), transparent 60%), radial-gradient(50% 40% at 20% 90%, rgba(124,122,76,.45), transparent 60%), linear-gradient(180deg,#2d2c26,#15150f);"></div>
+        <svg class="absolute bottom-0 left-0 w-full h-1/2 opacity-70" viewBox="0 0 800 300" preserveAspectRatio="none" aria-hidden="true"><path fill="#0e0e0b" d="M0 220 L120 160 L240 210 L360 130 L480 200 L600 150 L720 210 L800 170 L800 300 L0 300Z"/><path fill="#1c1b15" d="M0 260 L150 220 L300 250 L450 210 L600 250 L750 220 L800 240 L800 300 L0 300Z"/></svg>
+        <div class="absolute inset-0 grid place-items-center">
+          <div class="relative">
+            <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-10 rounded-[100%] bg-black/50 blur-xl translate-y-20"></div>
+            <div class="device product-device animate-float-slow" style="--device:#141414"><div class="brand">NOVA</div><div class="led"></div><div class="side"></div></div>
+          </div>
+        </div>
+        <!-- Callouts -->
+        <div class="callout-item absolute left-5 top-6 sm:left-8 sm:top-10 callout">Léger et confortable<br><span class="text-olive-light">(27 g)</span>
+          <svg class="absolute -right-10 top-8 hidden sm:block" width="60" height="50" viewBox="0 0 60 50" fill="none" stroke="#F4F1EA" stroke-width="1.6" stroke-linecap="round"><path d="M4 4c20 6 36 18 50 42" stroke-dasharray="3 4"/><path d="M48 38l6 8-9 1"/></svg>
+        </div>
+        <div class="callout-item absolute right-5 top-6 sm:right-8 sm:top-10 callout text-right">Jusqu'à 7 jours<br><span class="text-olive-light">d'autonomie</span>
+          <svg class="absolute -left-10 top-8 hidden sm:block" width="60" height="50" viewBox="0 0 60 50" fill="none" stroke="#F4F1EA" stroke-width="1.6" stroke-linecap="round"><path d="M56 4C36 10 20 22 6 46" stroke-dasharray="3 4"/><path d="M12 38l-6 8 9 1"/></svg>
+        </div>
+        <div class="callout-item absolute left-5 bottom-6 sm:left-8 sm:bottom-10 callout">Résistant à l'eau<br><span class="text-olive-light">IP67</span></div>
+        <div class="callout-item absolute right-5 bottom-6 sm:right-8 sm:bottom-10 callout text-right">Design discret<br><span class="text-olive-light">et robuste</span></div>
+      </div>
+
+      <!-- App copy + phone -->
+      <div id="app" class="grid sm:grid-cols-[1fr_auto] gap-8 items-center scroll-mt-28">
+        <div class="reveal">
+          <p class="eyebrow">Un suivi complet, une application intuitive</p>
+          <h2 class="font-heading font-extrabold h-section text-4xl sm:text-5xl mt-3">Tout ce qu'il faut,<br>au même endroit.</h2>
+          <p class="mt-5 text-graphite/90 leading-relaxed">Suivez la position, l'activité et les habitudes de votre compagnon depuis une application simple et claire, pensée pour les propriétaires d'animaux.</p>
+          <div class="mt-7 flex flex-wrap gap-3">
+            <a href="#" class="inline-flex items-center gap-3 bg-ink text-cream rounded-xl px-4 py-2.5 hover:bg-graphite transition cursor-pointer" aria-label="Télécharger sur l'App Store">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M16.37 12.6c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9s-1.8-.8-3-.8c-1.5 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.3.9-1.3 1.3-2.6 1.3-2.6s-2.5-1-2.5-3.8zM14.1 5.8c.6-.8 1.1-1.9.9-3-.9 0-2 .6-2.7 1.4-.6.7-1.1 1.8-1 2.8 1.1.1 2.1-.5 2.8-1.2z"/></svg>
+              <span class="leading-tight text-left"><span class="block text-[10px] opacity-80">Télécharger sur</span><span class="block font-semibold text-sm">l'App Store</span></span>
+            </a>
+            <a href="#" class="inline-flex items-center gap-3 bg-ink text-cream rounded-xl px-4 py-2.5 hover:bg-graphite transition cursor-pointer" aria-label="Disponible sur Google Play">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3.6 2.3 13.3 12l-9.7 9.7c-.3-.3-.5-.8-.5-1.3V3.6c0-.5.2-1 .5-1.3zm11.1 11.1 2.9 2.9-11 6.3c-.6.3-1.3.4-1.9.1l10-9.3zm0-2.8-10-9.3c.6-.3 1.3-.3 1.9.1l11 6.3-2.9 2.9zm1.4 1.4 3.3-1.9c1.1.6 1.1 2.2 0 2.8l-3.3 1.9L17.1 12l-1 0z"/></svg>
+              <span class="leading-tight text-left"><span class="block text-[10px] opacity-80">Disponible sur</span><span class="block font-semibold text-sm">Google Play</span></span>
+            </a>
+          </div>
+          <ul class="mt-7 space-y-2 text-sm text-graphite">
+            <li class="flex items-center gap-2"><span class="w-5 h-5 rounded-full bg-sage/15 text-sage-dark grid place-items-center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Position en temps réel, rafraîchie toutes les 2 à 10 secondes</li>
+            <li class="flex items-center gap-2"><span class="w-5 h-5 rounded-full bg-sage/15 text-sage-dark grid place-items-center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Historique des balades et des zones visitées</li>
+            <li class="flex items-center gap-2"><span class="w-5 h-5 rounded-full bg-sage/15 text-sage-dark grid place-items-center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Objectifs d'activité et suivi du sommeil</li>
+          </ul>
+        </div>
+
+        <!-- Phone mockup -->
+        <div class="reveal mx-auto">
+          <div class="phone animate-float" style="animation-duration:8s">
+            <div class="phone-screen">
+              <div class="phone-notch"></div>
+              <!-- Map screen -->
+              <div class="map absolute inset-0">
+                <svg class="absolute inset-0 w-full h-full" viewBox="0 0 268 568" fill="none" aria-hidden="true">
+                  <!-- safe zone -->
+                  <circle cx="178" cy="250" r="78" fill="#5DA66B" fill-opacity=".18" stroke="#5DA66B" stroke-width="2"/>
+                  <!-- route -->
+                  <path id="route" d="M40 470 C 70 420, 60 380, 100 350 S 150 300, 160 260 S 190 220, 178 250" stroke="#2563EB" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="6 8"/>
+                  <circle cx="40" cy="470" r="7" fill="#fff" stroke="#2563EB" stroke-width="3"/>
+                  <!-- home -->
+                  <g transform="translate(166 238)"><circle r="16" fill="#fff"/><path d="M-6 2v6h12V2M-8 3l8-7 8 7" stroke="#121212" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+                </svg>
+                <!-- moving pet marker -->
+                <div id="pet-marker" class="absolute w-11 h-11 -ml-[22px] -mt-[22px]" style="left:40px; top:470px;">
+                  <span class="absolute inset-0 rounded-full bg-sage/40 animate-ping2"></span>
+                  <span class="absolute inset-1 rounded-full bg-gradient-to-br from-amber to-olive border-[3px] border-white shadow grid place-items-center text-white text-xs font-heading font-extrabold">R</span>
+                </div>
+              </div>
+              <!-- Top bar -->
+              <div class="absolute top-0 inset-x-0 pt-11 px-4">
+                <div class="flex items-center justify-between text-[11px] font-semibold text-graphite"><span>09:04</span><span class="font-heading tracking-[.22em] font-extrabold text-sm">NOVA</span><span>84 %</span></div>
+                <div class="mt-3 glass rounded-2xl p-3 flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-gradient-to-br from-amber to-olive grid place-items-center text-white font-heading font-extrabold">R</div>
+                  <div class="leading-tight flex-1"><div class="text-sm font-semibold">Rocky</div><div class="text-[11px] text-stone">En mouvement · il y a 12 s</div></div>
+                  <span class="text-[11px] font-bold text-sage-dark bg-sage/15 px-2 py-1 rounded-md">84 %</span>
+                </div>
+              </div>
+              <!-- Bottom sheet -->
+              <div class="absolute bottom-0 inset-x-0 bg-paper rounded-t-3xl p-4 shadow-[0_-10px_30px_-10px_rgba(0,0,0,.25)]">
+                <div class="grid grid-cols-3 text-center">
+                  <div><div class="font-heading font-extrabold text-lg">12 <span class="text-[10px] text-stone">km/h</span></div><div class="text-[10px] text-stone">Vitesse</div></div>
+                  <div><div class="font-heading font-extrabold text-lg">320 <span class="text-[10px] text-stone">m</span></div><div class="text-[10px] text-stone">Distance</div></div>
+                  <div><div class="font-heading font-extrabold text-lg">1h 24</div><div class="text-[10px] text-stone">Activité</div></div>
+                </div>
+                <div class="mt-3 flex items-center justify-between bg-sand rounded-xl px-3 py-2.5">
+                  <div><div class="text-xs font-semibold">Zone de sécurité</div><div class="text-[10px] text-stone">Maison · 150 m</div></div>
+                  <div class="toggle" aria-hidden="true"></div>
+                </div>
+                <div class="mt-3 grid grid-cols-4 text-[10px] text-stone text-center pt-2 border-t border-ink/5">
+                  <span class="text-sage-dark font-bold">Carte</span><span>Activité</span><span>Zones</span><span>Réglages</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== HEALTH / ACTIVITY ========== -->
+    <section class="bg-ink text-cream overflow-hidden">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-20 lg:py-28 grid lg:grid-cols-2 gap-12 items-center">
+        <div class="reveal order-2 lg:order-1">
+          <div class="card !bg-graphite !border-white/10 p-6 max-w-md mx-auto text-cream">
+            <div class="flex items-center justify-between"><span class="font-semibold">Activité</span><span class="text-xs text-cream/60">Aujourd'hui</span></div>
+            <div class="mt-5 flex items-center gap-6">
+              <div class="relative w-32 h-32 shrink-0">
+                <svg viewBox="0 0 120 120" class="w-full h-full -rotate-90"><circle cx="60" cy="60" r="50" stroke="rgba(255,255,255,.1)" stroke-width="12" fill="none"/><circle id="ring" cx="60" cy="60" r="50" stroke="#5DA66B" stroke-width="12" fill="none" stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="314"/></svg>
+                <div class="absolute inset-0 grid place-items-center text-center"><div><div class="font-heading font-extrabold text-3xl"><span data-count="64">0</span>%</div><div class="text-[10px] text-cream/60">objectif</div></div></div>
+              </div>
+              <div class="flex-1 h-28 flex items-end gap-1.5" aria-hidden="true">
+                <div class="bar flex-1" style="height:40%"></div><div class="bar flex-1" style="height:65%"></div><div class="bar flex-1" style="height:30%"></div><div class="bar flex-1" style="height:85%"></div><div class="bar flex-1" style="height:55%"></div><div class="bar flex-1" style="height:95%"></div><div class="bar flex-1" style="height:70%"></div>
+              </div>
+            </div>
+            <div class="mt-6 grid grid-cols-3 gap-3 text-center">
+              <div class="bg-white/5 rounded-xl py-3"><div class="font-heading font-extrabold text-lg">12,4 <span class="text-[10px] text-cream/60">km</span></div><div class="text-[10px] text-cream/60">Distance</div></div>
+              <div class="bg-white/5 rounded-xl py-3"><div class="font-heading font-extrabold text-lg">2h 16</div><div class="text-[10px] text-cream/60">Temps actif</div></div>
+              <div class="bg-white/5 rounded-xl py-3"><div class="font-heading font-extrabold text-lg">8h 24</div><div class="text-[10px] text-cream/60">Sommeil</div></div>
+            </div>
+            <div class="mt-4 flex items-center gap-3 bg-sage/15 border border-sage/30 rounded-xl px-3 py-2.5 text-xs">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5DA66B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>
+              <span><strong>Rocky est en pleine forme.</strong> Activité supérieure à sa moyenne cette semaine.</span>
+            </div>
+          </div>
+        </div>
+        <div class="reveal order-1 lg:order-2">
+          <p class="eyebrow !text-cream/60">Santé & bien-être</p>
+          <h2 class="font-heading font-extrabold h-section text-4xl sm:text-5xl mt-3">Comprenez ce que<br>votre compagnon ne dit pas.</h2>
+          <p class="mt-5 text-cream/75 leading-relaxed max-w-lg">Au-delà du GPS, NOVA analyse l'activité, le repos et le sommeil de votre chien ou de votre chat. Repérez un changement d'habitude avant qu'il ne devienne un problème.</p>
+          <ul class="mt-8 space-y-4">
+            <li class="flex gap-4"><span class="w-11 h-11 rounded-2xl bg-white/10 grid place-items-center shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></span><div><div class="font-semibold">Objectifs d'activité adaptés</div><div class="text-sm text-cream/65">Calculés selon la race, l'âge et le poids.</div></div></li>
+            <li class="flex gap-4"><span class="w-11 h-11 rounded-2xl bg-white/10 grid place-items-center shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></span><div><div class="font-semibold">Qualité du sommeil</div><div class="text-sm text-cream/65">Durée, interruptions et tendances sur 30 jours.</div></div></li>
+            <li class="flex gap-4"><span class="w-11 h-11 rounded-2xl bg-white/10 grid place-items-center shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg></span><div><div class="font-semibold">Alertes de changement</div><div class="text-sm text-cream/65">Baisse d'activité, agitation nocturne : vous êtes prévenu.</div></div></li>
+          </ul>
+          <a href="#offre" class="btn btn-light mt-9">Découvrir l'offre Premium <span>→</span></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== BENEFITS ========== -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 py-20 lg:py-28 grid lg:grid-cols-12 gap-10 items-start">
+      <div class="lg:col-span-4 reveal">
+        <h2 class="font-heading font-extrabold h-section text-4xl sm:text-5xl">Plus qu'un GPS.<br>Une tranquillité d'esprit.</h2>
+        <p class="mt-5 text-graphite/90 leading-relaxed">Que ce soit en forêt, en ville ou en vacances, NOVA vous accompagne au quotidien pour que vous puissiez profiter de chaque moment avec votre compagnon en toute sérénité.</p>
+        <a href="#guide" class="inline-flex items-center gap-2 mt-6 font-semibold border-b-2 border-ink pb-0.5 hover:text-olive hover:border-olive transition cursor-pointer">Voir comment ça marche →</a>
+      </div>
+      <div class="lg:col-span-8 grid sm:grid-cols-3 gap-5 benefits">
+        <article class="card card-hover overflow-hidden reveal">
+          <div class="aspect-[4/3] relative" style="background: linear-gradient(160deg,#9fc3d9,#4f7fa3 60%,#2d4d6b);">
+            <svg class="absolute inset-0 w-full h-full" viewBox="0 0 400 300" aria-hidden="true"><ellipse cx="200" cy="250" rx="260" ry="60" fill="#fff" opacity=".25"/><circle cx="130" cy="110" r="38" fill="#fff" opacity=".18"/><path d="M0 230 Q100 200 200 230 T400 230 V300 H0Z" fill="#fff" opacity=".35"/></svg>
+            <span class="absolute left-4 bottom-4 w-11 h-11 rounded-full bg-white grid place-items-center shadow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#121212" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="20" cy="16" r="2"/><path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z"/></svg></span>
+          </div>
+          <div class="p-5"><h3 class="font-heading font-bold text-lg">Exploration en toute liberté</h3><p class="text-sm text-stone mt-1.5">Laissez-le profiter de ses aventures en toute sécurité.</p></div>
+        </article>
+        <article class="card card-hover overflow-hidden reveal">
+          <div class="aspect-[4/3] relative" style="background: linear-gradient(160deg,#e8d3b0,#b98e5f 55%,#6f5536);">
+            <svg class="absolute inset-0 w-full h-full" viewBox="0 0 400 300" aria-hidden="true"><path d="M0 220 L80 150 L160 200 L240 120 L320 190 L400 140 V300 H0Z" fill="#3b2f20" opacity=".55"/><circle cx="300" cy="80" r="30" fill="#fff" opacity=".5"/></svg>
+            <span class="absolute left-4 bottom-4 w-11 h-11 rounded-full bg-white grid place-items-center shadow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#121212" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg></span>
+          </div>
+          <div class="p-5"><h3 class="font-heading font-bold text-lg">Prévention des fugues</h3><p class="text-sm text-stone mt-1.5">Soyez alerté immédiatement s'il sort de sa zone.</p></div>
+        </article>
+        <article class="card card-hover overflow-hidden reveal">
+          <div class="aspect-[4/3] relative" style="background: linear-gradient(160deg,#f1dcc0,#c9955e 55%,#7a4e2a);">
+            <svg class="absolute inset-0 w-full h-full" viewBox="0 0 400 300" aria-hidden="true"><ellipse cx="200" cy="260" rx="220" ry="50" fill="#3b2410" opacity=".4"/><path d="M80 200 q60 -60 120 0 q60 -60 120 0" stroke="#fff" stroke-width="6" fill="none" opacity=".4" stroke-linecap="round"/></svg>
+            <span class="absolute left-4 bottom-4 w-11 h-11 rounded-full bg-white grid place-items-center shadow"><svg width="20" height="20" viewBox="0 0 24 24" fill="#e24b4b" stroke="#e24b4b" stroke-width="2" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></span>
+          </div>
+          <div class="p-5"><h3 class="font-heading font-bold text-lg">Suivi de santé et bien-être</h3><p class="text-sm text-stone mt-1.5">Comprenez son niveau d'activité et veillez à son équilibre.</p></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ========== GUIDE ========== -->
+    <section id="guide" class="bg-sand/60 border-y border-ink/5 scroll-mt-24">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-20 lg:py-28">
+        <div class="max-w-2xl reveal">
+          <p class="eyebrow">Guide · Simple d'utilisation</p>
+          <h2 class="font-heading font-extrabold h-section text-4xl sm:text-5xl mt-3">Prêt en 3 minutes.<br>Vraiment.</h2>
+          <p class="mt-5 text-graphite/90 leading-relaxed">Pas de configuration compliquée. Fixez, scannez, partez.</p>
+        </div>
+
+        <ol class="steps mt-12 grid md:grid-cols-3 gap-5">
+          <li class="card card-hover p-7 reveal relative overflow-hidden">
+            <span class="absolute -right-3 -top-6 font-heading font-extrabold text-[7rem] leading-none text-sand select-none" aria-hidden="true">1</span>
+            <div class="relative">
+              <div class="w-14 h-14 rounded-2xl bg-ink text-cream grid place-items-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg></div>
+              <h3 class="font-heading font-bold text-xl mt-6">Fixez le tracker</h3>
+              <p class="text-sm text-stone mt-2 leading-relaxed">Glissez NOVA sur le collier ou le harnais existant (largeur 15 à 30 mm). Le clip verrouillable tient même en pleine course.</p>
+            </div>
+          </li>
+          <li class="card card-hover p-7 reveal relative overflow-hidden">
+            <span class="absolute -right-3 -top-6 font-heading font-extrabold text-[7rem] leading-none text-sand select-none" aria-hidden="true">2</span>
+            <div class="relative">
+              <div class="w-14 h-14 rounded-2xl bg-ink text-cream grid place-items-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg></div>
+              <h3 class="font-heading font-bold text-xl mt-6">Scannez le QR code</h3>
+              <p class="text-sm text-stone mt-2 leading-relaxed">Ouvrez l'app NOVA, scannez le code au dos du tracker et créez le profil de votre animal. La carte SIM intégrée s'active toute seule.</p>
+            </div>
+          </li>
+          <li class="card card-hover p-7 reveal relative overflow-hidden">
+            <span class="absolute -right-3 -top-6 font-heading font-extrabold text-[7rem] leading-none text-sand select-none" aria-hidden="true">3</span>
+            <div class="relative">
+              <div class="w-14 h-14 rounded-2xl bg-sage text-white grid place-items-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg></div>
+              <h3 class="font-heading font-bold text-xl mt-6">Partez l'esprit libre</h3>
+              <p class="text-sm text-stone mt-2 leading-relaxed">Définissez une zone de sécurité autour de la maison. Dès qu'il en sort, votre téléphone vibre. Rechargez une fois par semaine, c'est tout.</p>
+            </div>
+          </li>
+        </ol>
+
+        <!-- Size guide + usage tips -->
+        <div class="mt-10 grid lg:grid-cols-5 gap-5">
+          <div class="card p-6 sm:p-8 lg:col-span-3 reveal min-w-0">
+            <div class="flex items-center justify-between flex-wrap gap-3">
+              <h3 class="font-heading font-bold text-xl">Guide de compatibilité</h3>
+              <span class="text-xs font-semibold px-3 py-1.5 rounded-full bg-sage/15 text-sage-dark">Un seul modèle, tous les compagnons</span>
+            </div>
+            <div class="overflow-x-auto hide-scroll mt-5 max-w-full">
+              <table class="tbl w-full text-sm text-left min-w-[520px]">
+                <thead class="text-xs uppercase tracking-wider text-stone"><tr><th>Animal</th><th>Poids</th><th>Fixation conseillée</th><th>Recommandé</th></tr></thead>
+                <tbody>
+                  <tr><td class="font-semibold">Chat</td><td>À partir de 3 kg</td><td>Collier chat anti-étranglement 15 mm</td><td><span class="inline-flex items-center gap-1 text-sage-dark font-semibold"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Oui</span></td></tr>
+                  <tr><td class="font-semibold">Petit chien</td><td>3 – 10 kg</td><td>Collier 15 – 20 mm</td><td><span class="inline-flex items-center gap-1 text-sage-dark font-semibold"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Oui</span></td></tr>
+                  <tr><td class="font-semibold">Chien moyen</td><td>10 – 25 kg</td><td>Collier ou harnais 20 – 25 mm</td><td><span class="inline-flex items-center gap-1 text-sage-dark font-semibold"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Oui</span></td></tr>
+                  <tr><td class="font-semibold">Grand chien</td><td>+ 25 kg</td><td>Collier ou harnais 25 – 30 mm</td><td><span class="inline-flex items-center gap-1 text-sage-dark font-semibold"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Oui</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="text-xs text-stone mt-4">Tracker : 52 × 30 × 16 mm · 27 g · Clip universel inclus. Collier NOVA réfléchissant disponible en option.</p>
+          </div>
+          <div class="card p-6 sm:p-8 lg:col-span-2 bg-ink text-cream !border-transparent reveal">
+            <h3 class="font-heading font-bold text-xl">Conseils d'utilisation</h3>
+            <ul class="mt-5 space-y-4 text-sm">
+              <li class="flex gap-3"><span class="w-7 h-7 rounded-full bg-white/10 grid place-items-center shrink-0 text-xs font-bold">1</span><span><strong class="text-cream">Chargez-le la veille.</strong> 2 h de charge via le câble magnétique = jusqu'à 7 jours d'autonomie.</span></li>
+              <li class="flex gap-3"><span class="w-7 h-7 rounded-full bg-white/10 grid place-items-center shrink-0 text-xs font-bold">2</span><span><strong class="text-cream">Logo vers le haut.</strong> Le capteur GPS capte mieux quand le tracker est sur le dessus du cou.</span></li>
+              <li class="flex gap-3"><span class="w-7 h-7 rounded-full bg-white/10 grid place-items-center shrink-0 text-xs font-bold">3</span><span><strong class="text-cream">Activez le mode « Live ».</strong> En balade, la position se rafraîchit toutes les 2 s pour le retrouver vite.</span></li>
+              <li class="flex gap-3"><span class="w-7 h-7 rounded-full bg-white/10 grid place-items-center shrink-0 text-xs font-bold">4</span><span><strong class="text-cream">Partagez l'accès.</strong> Toute la famille peut suivre Rocky avec l'offre Premium.</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== OFFER ========== -->
+    <section id="offre" class="max-w-7xl mx-auto px-4 sm:px-6 py-20 lg:py-28 scroll-mt-24">
+      <div class="grid lg:grid-cols-12 gap-10 items-start">
+        <!-- Product purchase -->
+        <div class="lg:col-span-5 reveal">
+          <p class="eyebrow">Offre</p>
+          <h2 class="font-heading font-extrabold h-section text-4xl sm:text-5xl mt-3">Une offre simple<br>et transparente.</h2>
+          <p class="mt-4 text-graphite/90">Un seul produit, deux formules d'abonnement adaptées à vos besoins.</p>
+
+          <div class="card mt-8 p-6 sm:p-7">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-amber/15 text-amber">Best-seller</span>
+                <h3 class="font-heading font-bold text-2xl mt-3">Tracker GPS NOVA</h3>
+                <div class="flex items-center gap-1 mt-1 text-sm"><span class="star">★★★★★</span><span class="text-stone">4,8/5 · 1 000+ avis</span></div>
+              </div>
+              <div class="text-right">
+                <div class="font-heading font-extrabold text-2xl sm:text-3xl whitespace-nowrap">59,90 €</div>
+                <div class="text-xs text-stone line-through">79,90 €</div>
+              </div>
+            </div>
+            <div class="mt-6 h-36 rounded-2xl bg-sand grid place-items-center overflow-hidden relative">
+              <div class="device device-sm scale-[.72]" id="offer-device" style="--device:#141414"><div class="brand">NOVA</div><div class="led"></div><div class="side"></div></div>
+            </div>
+            <div class="mt-5 flex items-center justify-between">
+              <span class="text-sm font-semibold">Couleur : <span id="offer-color-name">Noir</span></span>
+              <div id="offer-swatches" class="flex items-center gap-2" role="radiogroup" aria-label="Couleur">
+                <button class="swatch swatch-sm active" style="background:#141414" data-color="#141414" data-name="Noir" data-text="#d9d9d9" role="radio" aria-checked="true" aria-label="Noir"></button>
+                <button class="swatch swatch-sm" style="background:#EDE6D6" data-color="#EDE6D6" data-name="Crème" data-text="#2a2a28" role="radio" aria-checked="false" aria-label="Crème"></button>
+                <button class="swatch swatch-sm" style="background:#7C7A4C" data-color="#7C7A4C" data-name="Olive" data-text="#f4f1ea" role="radio" aria-checked="false" aria-label="Olive"></button>
+                <button class="swatch swatch-sm" style="background:#C96A3B" data-color="#C96A3B" data-name="Terracotta" data-text="#fff3e8" role="radio" aria-checked="false" aria-label="Terracotta"></button>
+              </div>
+            </div>
+            <ul class="mt-5 grid grid-cols-2 gap-2 text-xs text-stone">
+              <li class="flex items-center gap-2"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5DA66B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Tracker + clip universel</li>
+              <li class="flex items-center gap-2"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5DA66B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Câble de charge magnétique</li>
+              <li class="flex items-center gap-2"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5DA66B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>SIM intégrée (Europe)</li>
+              <li class="flex items-center gap-2"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5DA66B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Garantie 2 ans</li>
+            </ul>
+            <button class="btn btn-dark btn-shine w-full mt-6 add-to-cart" data-id="tracker" data-name="Tracker GPS NOVA" data-price="59.90" data-variant-from="#offer-color-name">Ajouter au panier · 59,90 €</button>
+            <p class="text-center text-[11px] text-stone mt-3">Paiement sécurisé · Livraison 2–4 jours · Retour gratuit 30 jours</p>
+          </div>
+
+          <!-- Accessory -->
+          <div class="card mt-4 p-5 flex items-center gap-4">
+            <div class="w-16 h-16 rounded-xl bg-sand grid place-items-center shrink-0"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#121212" stroke-width="1.8" stroke-linecap="round"><ellipse cx="12" cy="12" rx="9" ry="6"/><ellipse cx="12" cy="12" rx="7" ry="4" stroke-dasharray="2 2"/><rect x="10" y="15" width="4" height="4" rx="1" fill="#121212"/></svg></div>
+            <div class="flex-1"><div class="font-semibold">Collier NOVA réfléchissant</div><div class="text-xs text-stone">Nylon renforcé, boucle sécurité · Tailles S à L</div></div>
+            <div class="text-right"><div class="font-heading font-extrabold">19,90 €</div><button class="text-xs font-bold text-sage-dark hover:underline cursor-pointer add-to-cart" data-id="collar" data-name="Collier NOVA réfléchissant" data-price="19.90">+ Ajouter</button></div>
+          </div>
+        </div>
+
+        <!-- Plans -->
+        <div class="lg:col-span-7">
+          <div class="flex items-center justify-between flex-wrap gap-4 reveal">
+            <div>
+              <h3 class="font-heading font-bold text-2xl">Choisissez votre abonnement</h3>
+              <p class="text-sm text-stone mt-1">Nécessaire pour la connexion GPS. Sans engagement, résiliable à tout moment.</p>
+            </div>
+            <div class="plan-toggle inline-flex p-1 rounded-full bg-sand text-sm font-semibold">
+              <button class="px-4 py-2 rounded-full active cursor-pointer" data-period="month">Mensuel</button>
+              <button class="px-4 py-2 rounded-full cursor-pointer" data-period="year">Annuel <span class="text-sage-dark text-xs">-20 %</span></button>
+            </div>
+          </div>
+
+          <div class="plans mt-6 grid md:grid-cols-2 gap-5">
+            <article class="card card-hover p-7 reveal flex flex-col">
+              <h4 class="font-heading font-bold text-xl">Basic</h4>
+              <div class="mt-3 flex items-end gap-1"><span class="font-heading font-extrabold text-4xl price" data-month="5,99" data-year="4,79">5,99</span><span class="text-stone mb-1.5">€/mois</span></div>
+              <p class="text-xs text-stone mt-1 billing" data-month="Facturé mensuellement" data-year="Soit 57,50 € facturés par an">Facturé mensuellement</p>
+              <ul class="mt-6 space-y-3 text-sm flex-1">
+                <li class="flex items-center gap-2.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5DA66B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Localisation GPS en temps réel</li>
+                <li class="flex items-center gap-2.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5DA66B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Zones de sécurité</li>
+                <li class="flex items-center gap-2.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5DA66B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Alertes instantanées</li>
+                <li class="flex items-center gap-2.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5DA66B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Historique 7 jours</li>
+                <li class="flex items-center gap-2.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5DA66B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>1 animal</li>
+              </ul>
+              <button class="btn btn-dark w-full mt-7 add-to-cart" data-id="plan-basic" data-name="Abonnement Basic" data-price="5.99" data-plan="basic">Choisir Basic</button>
+            </article>
+            <article class="card card-hover p-7 reveal flex flex-col relative border-2 !border-sage">
+              <span class="absolute -top-3.5 left-1/2 -translate-x-1/2 text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full bg-sage text-white shadow">Le plus populaire</span>
+              <h4 class="font-heading font-bold text-xl">Premium</h4>
+              <div class="mt-3 flex items-end gap-1"><span class="font-heading font-extrabold text-4xl price" data-month="8,99" data-year="7,19">8,99</span><span class="text-stone mb-1.5">€/mois</span></div>
+              <p class="text-xs text-stone mt-1 billing" data-month="Facturé mensuellement" data-year="Soit 86,30 € facturés par an">Facturé mensuellement</p>
+              <ul class="mt-6 space-y-3 text-sm flex-1">
+                <li class="flex items-center gap-2.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5DA66B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Toutes les fonctionnalités Basic</li>
+                <li class="flex items-center gap-2.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5DA66B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Historique complet</li>
+                <li class="flex items-center gap-2.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5DA66B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Suivi d'activité et de bien-être</li>
+                <li class="flex items-center gap-2.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5DA66B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Plusieurs zones</li>
+                <li class="flex items-center gap-2.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5DA66B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Plusieurs animaux</li>
+                <li class="flex items-center gap-2.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5DA66B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Partage familial</li>
+              </ul>
+              <button class="btn btn-sage w-full mt-7 add-to-cart" data-id="plan-premium" data-name="Abonnement Premium" data-price="8.99" data-plan="premium">Choisir Premium</button>
+            </article>
+          </div>
+
+          <div class="mt-5 grid sm:grid-cols-3 gap-3 text-xs text-stone reveal">
+            <div class="flex items-center gap-2 bg-white rounded-xl px-3 py-2.5 border border-ink/5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#121212" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Paiement 100 % sécurisé</div>
+            <div class="flex items-center gap-2 bg-white rounded-xl px-3 py-2.5 border border-ink/5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#121212" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>Sans engagement</div>
+            <div class="flex items-center gap-2 bg-white rounded-xl px-3 py-2.5 border border-ink/5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#121212" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Support 7j/7 en français</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== TESTIMONIALS ========== -->
+    <section id="avis" class="relative overflow-hidden scroll-mt-24">
+      <div class="absolute inset-0" style="background: linear-gradient(180deg,#2b2a22 0%,#1b1a15 60%,#121212 100%);" aria-hidden="true"></div>
+      <svg class="absolute bottom-0 left-0 w-full h-[55%] opacity-80" viewBox="0 0 1440 400" preserveAspectRatio="none" aria-hidden="true">
+        <defs><radialGradient id="sun" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#f0c27b" stop-opacity=".9"/><stop offset="1" stop-color="#f0c27b" stop-opacity="0"/></radialGradient></defs>
+        <circle cx="1040" cy="150" r="220" fill="url(#sun)"/>
+        <path fill="#1a1912" d="M0 260 L180 190 L360 240 L540 160 L720 230 L900 180 L1080 250 L1260 200 L1440 240 L1440 400 L0 400Z"/>
+        <path fill="#0f0e0a" d="M0 330 L200 290 L400 320 L600 280 L800 320 L1000 290 L1200 330 L1440 300 L1440 400 L0 400Z"/>
+      </svg>
+      <div class="relative max-w-7xl mx-auto px-4 sm:px-6 py-20 lg:py-28 text-cream">
+        <div class="grid lg:grid-cols-12 gap-10 items-end">
+          <div class="lg:col-span-6 reveal">
+            <blockquote class="font-heading font-extrabold h-section text-4xl sm:text-5xl lg:text-6xl">« Enfin serein lors<br>de nos balades. »</blockquote>
+            <div class="mt-6 flex items-center gap-3 flex-wrap">
+              <span class="star text-xl tracking-wider">★★★★★</span>
+              <span class="text-sm text-cream/80">4,8/5 sur plus de 1 000 avis</span>
+              <div class="flex -space-x-2 ml-2">
+                <span class="w-8 h-8 rounded-full border-2 border-ink bg-gradient-to-br from-amber to-olive"></span>
+                <span class="w-8 h-8 rounded-full border-2 border-ink bg-gradient-to-br from-sage to-olive"></span>
+                <span class="w-8 h-8 rounded-full border-2 border-ink bg-gradient-to-br from-cream to-amber"></span>
+                <span class="w-8 h-8 rounded-full border-2 border-ink bg-gradient-to-br from-olive-light to-stone"></span>
+              </div>
+            </div>
+          </div>
+          <div class="lg:col-span-6 grid grid-cols-3 gap-3 reveal">
+            <div class="glass-dark rounded-2xl p-4 sm:p-5 text-center"><div class="font-heading font-extrabold text-2xl sm:text-3xl"><span data-count="10000" data-format="k">0</span>+</div><div class="text-[11px] sm:text-xs text-cream/70 mt-1">animaux suivis</div></div>
+            <div class="glass-dark rounded-2xl p-4 sm:p-5 text-center"><div class="font-heading font-extrabold text-2xl sm:text-3xl">4,8/5</div><div class="text-[11px] sm:text-xs text-cream/70 mt-1">avis clients</div></div>
+            <div class="glass-dark rounded-2xl p-4 sm:p-5 text-center"><div class="font-heading font-extrabold text-2xl sm:text-3xl"><span data-count="98">0</span> %</div><div class="text-[11px] sm:text-xs text-cream/70 mt-1">de clients satisfaits</div></div>
+          </div>
+        </div>
+
+        <div class="reviews mt-12 grid md:grid-cols-3 gap-5">
+          <article class="glass-dark rounded-3xl p-6 reveal">
+            <div class="star">★★★★★</div>
+            <p class="mt-3 text-sm leading-relaxed text-cream/90">« Mon beagle a l'habitude de suivre les odeurs… En deux semaines, l'alerte de zone m'a déjà évité une belle frayeur. L'app est ultra claire. »</p>
+            <footer class="mt-5 flex items-center gap-3"><span class="w-10 h-10 rounded-full bg-gradient-to-br from-amber to-olive"></span><div><div class="text-sm font-semibold">Camille · Lyon</div><div class="text-[11px] text-cream/60">Propriétaire de Rocky, beagle</div></div></footer>
+          </article>
+          <article class="glass-dark rounded-3xl p-6 reveal">
+            <div class="star">★★★★★</div>
+            <p class="mt-3 text-sm leading-relaxed text-cream/90">« Léger même pour ma chatte de 3,5 kg. Je vois enfin où elle passe ses nuits, et le suivi du sommeil a rassuré notre véto. »</p>
+            <footer class="mt-5 flex items-center gap-3"><span class="w-10 h-10 rounded-full bg-gradient-to-br from-sage to-olive"></span><div><div class="text-sm font-semibold">Thomas · Bordeaux</div><div class="text-[11px] text-cream/60">Propriétaire de Mia, européenne</div></div></footer>
+          </article>
+          <article class="glass-dark rounded-3xl p-6 reveal">
+            <div class="star">★★★★☆</div>
+            <p class="mt-3 text-sm leading-relaxed text-cream/90">« Autonomie réelle de 6 jours en rando intensive, étanchéité testée dans les lacs. Je retire une étoile pour le câble un peu court. »</p>
+            <footer class="mt-5 flex items-center gap-3"><span class="w-10 h-10 rounded-full bg-gradient-to-br from-cream to-amber"></span><div><div class="text-sm font-semibold">Inès · Annecy</div><div class="text-[11px] text-cream/60">Propriétaire de Nala, border collie</div></div></footer>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== FAQ ========== -->
+    <section id="faq" class="max-w-4xl mx-auto px-4 sm:px-6 py-20 lg:py-28 scroll-mt-24">
+      <div class="text-center reveal">
+        <p class="eyebrow">FAQ</p>
+        <h2 class="font-heading font-extrabold h-section text-4xl sm:text-5xl mt-3">Vos questions, nos réponses.</h2>
+      </div>
+      <div class="faq-list mt-10 space-y-3">
+        <details class="card p-0 overflow-hidden reveal group" open>
+          <summary class="flex items-center justify-between gap-4 p-5 sm:p-6 cursor-pointer font-semibold"><span>Le tracker fonctionne-t-il sans abonnement ?</span><span class="faq-icon w-8 h-8 rounded-full bg-sand grid place-items-center shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+          <div class="px-5 sm:px-6 pb-6 text-sm text-stone leading-relaxed -mt-1">Non. Le GPS envoie sa position via le réseau mobile grâce à la carte SIM intégrée : l'abonnement couvre cette connexion. Il est sans engagement, à partir de 5,99 €/mois, et se résilie en un clic depuis l'application.</div>
+        </details>
+        <details class="card p-0 overflow-hidden reveal">
+          <summary class="flex items-center justify-between gap-4 p-5 sm:p-6 cursor-pointer font-semibold"><span>Est-il adapté aux chats ?</span><span class="faq-icon w-8 h-8 rounded-full bg-sand grid place-items-center shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+          <div class="px-5 sm:px-6 pb-6 text-sm text-stone leading-relaxed -mt-1">Oui. Avec 27 g et 52 mm de long, NOVA convient aux chats à partir de 3 kg. Utilisez un collier chat à boucle anti-étranglement de 15 mm : le clip universel s'y fixe directement.</div>
+        </details>
+        <details class="card p-0 overflow-hidden reveal">
+          <summary class="flex items-center justify-between gap-4 p-5 sm:p-6 cursor-pointer font-semibold"><span>Quelle est l'autonomie réelle ?</span><span class="faq-icon w-8 h-8 rounded-full bg-sand grid place-items-center shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+          <div class="px-5 sm:px-6 pb-6 text-sm text-stone leading-relaxed -mt-1">Jusqu'à 7 jours en usage normal (animal à la maison la majeure partie du temps). En mode « Live » continu pendant une randonnée, comptez environ 2 jours. La charge complète prend 2 heures.</div>
+        </details>
+        <details class="card p-0 overflow-hidden reveal">
+          <summary class="flex items-center justify-between gap-4 p-5 sm:p-6 cursor-pointer font-semibold"><span>Fonctionne-t-il à l'étranger ?</span><span class="faq-icon w-8 h-8 rounded-full bg-sand grid place-items-center shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+          <div class="px-5 sm:px-6 pb-6 text-sm text-stone leading-relaxed -mt-1">Oui, dans toute l'Europe sans frais supplémentaires. La SIM multi-opérateurs bascule automatiquement sur le réseau le plus fort disponible.</div>
+        </details>
+        <details class="card p-0 overflow-hidden reveal">
+          <summary class="flex items-center justify-between gap-4 p-5 sm:p-6 cursor-pointer font-semibold"><span>Et si mon animal n'aime pas le porter ?</span><span class="faq-icon w-8 h-8 rounded-full bg-sand grid place-items-center shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+          <div class="px-5 sm:px-6 pb-6 text-sm text-stone leading-relaxed -mt-1">Vous avez 30 jours pour l'essayer. S'il ne vous convient pas, renvoyez-le gratuitement : nous vous remboursons intégralement, abonnement compris.</div>
+        </details>
+        <details class="card p-0 overflow-hidden reveal">
+          <summary class="flex items-center justify-between gap-4 p-5 sm:p-6 cursor-pointer font-semibold"><span>Mes données sont-elles protégées ?</span><span class="faq-icon w-8 h-8 rounded-full bg-sand grid place-items-center shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+          <div class="px-5 sm:px-6 pb-6 text-sm text-stone leading-relaxed -mt-1">Les positions sont chiffrées de bout en bout et hébergées en Europe. Vous seul (et les personnes que vous invitez) pouvez voir où se trouve votre compagnon. Aucune revente de données.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ========== FINAL CTA ========== -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 pb-20 lg:pb-28">
+      <div class="reveal relative rounded-[2.5rem] overflow-hidden bg-ink text-cream px-6 sm:px-12 py-14 sm:py-20 text-center shadow-lift">
+        <div class="absolute inset-0 opacity-70" style="background: radial-gradient(60% 80% at 20% 100%, rgba(124,122,76,.6), transparent 60%), radial-gradient(50% 70% at 90% 0%, rgba(217,139,58,.45), transparent 60%);" aria-hidden="true"></div>
+        <div class="relative">
+          <h2 class="font-heading font-extrabold h-section text-4xl sm:text-6xl">Pour ceux qui<br>vont plus loin.</h2>
+          <p class="mt-5 text-cream/75 max-w-xl mx-auto">Rejoignez les 10 000 propriétaires qui ne partent plus en balade sans NOVA. Livré en 2 à 4 jours, essai 30 jours.</p>
+          <div class="mt-8 flex flex-wrap justify-center gap-3">
+            <a href="#offre" class="btn btn-light btn-shine">Commander NOVA · 59,90 € <span class="arrow">→</span></a>
+            <a href="#guide" class="btn !bg-transparent !text-cream border border-cream/40 hover:!bg-white/10">Lire le guide</a>
+          </div>
+          <form class="mt-10 max-w-md mx-auto flex gap-2" onsubmit="event.preventDefault(); showToast('Merci ! Vous recevrez nos conseils et offres.');">
+            <label for="newsletter" class="sr-only">Votre e-mail</label>
+            <input id="newsletter" type="email" required placeholder="Votre e-mail pour 10 % de réduction" class="flex-1 min-w-0 rounded-full px-5 py-3 bg-white/10 border border-white/20 placeholder:text-cream/50 text-sm focus:bg-white/15">
+            <button type="submit" class="btn btn-sage !px-5">OK</button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="border-t border-ink/10 bg-paper">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-14 grid md:grid-cols-4 gap-10">
+      <div>
+        <div class="font-heading font-extrabold text-2xl tracking-[.22em]">NOVA</div>
+        <p class="text-[10px] tracking-[.18em] uppercase text-stone mt-1">Pour ceux qui vont plus loin</p>
+        <p class="text-sm text-stone mt-4 leading-relaxed">Traceurs GPS et suivi santé pour chiens et chats. Conçu en France.</p>
+      </div>
+      <div>
+        <h4 class="font-semibold text-sm">Produit</h4>
+        <ul class="mt-3 space-y-2 text-sm text-stone">
+          <li><a href="#produit" class="hover:text-ink">Tracker GPS</a></li>
+          <li><a href="#offre" class="hover:text-ink">Abonnements</a></li>
+          <li><a href="#app" class="hover:text-ink">Application</a></li>
+          <li><a href="#offre" class="hover:text-ink">Accessoires</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold text-sm">Aide</h4>
+        <ul class="mt-3 space-y-2 text-sm text-stone">
+          <li><a href="#guide" class="hover:text-ink">Guide de démarrage</a></li>
+          <li><a href="#faq" class="hover:text-ink">FAQ</a></li>
+          <li><a href="#" class="hover:text-ink">Livraison & retours</a></li>
+          <li><a href="#" class="hover:text-ink">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold text-sm">Légal</h4>
+        <ul class="mt-3 space-y-2 text-sm text-stone">
+          <li><a href="#" class="hover:text-ink">Mentions légales</a></li>
+          <li><a href="#" class="hover:text-ink">CGV</a></li>
+          <li><a href="#" class="hover:text-ink">Confidentialité</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-ink/10">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-5 flex flex-wrap items-center justify-between gap-3 text-xs text-stone">
+        <span>© 2026 NOVA. Tous droits réservés.</span>
+        <span class="flex items-center gap-3"><span>Visa</span><span>Mastercard</span><span>Apple Pay</span><span>PayPal</span></span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========== CART DRAWER ========== -->
+  <div id="cart-backdrop" class="fixed inset-0 bg-ink/50 backdrop-blur-sm z-[80]"></div>
+  <aside id="cart-drawer" class="fixed top-0 right-0 h-full w-full max-w-md bg-paper z-[90] shadow-lift flex flex-col" role="dialog" aria-modal="true" aria-labelledby="cart-title">
+    <div class="flex items-center justify-between p-5 border-b border-ink/10">
+      <h2 id="cart-title" class="font-heading font-bold text-xl">Votre panier</h2>
+      <button id="close-cart" class="w-10 h-10 rounded-full hover:bg-sand grid place-items-center cursor-pointer" aria-label="Fermer le panier"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="px-5 pt-4">
+      <div class="flex items-center justify-between text-xs font-semibold"><span id="ship-msg">Plus que 59,00 € pour la livraison offerte</span><span id="ship-pct">0 %</span></div>
+      <div class="mt-2 h-2 rounded-full bg-sand overflow-hidden"><div id="ship-bar" class="h-full bg-sage rounded-full transition-all duration-500" style="width:0%"></div></div>
+    </div>
+    <div id="cart-items" class="flex-1 overflow-y-auto p-5 space-y-3"></div>
+    <div class="p-5 border-t border-ink/10 bg-white">
+      <div class="flex items-center justify-between text-sm text-stone"><span>Sous-total</span><span id="cart-subtotal">0,00 €</span></div>
+      <div class="flex items-center justify-between text-sm text-stone mt-1"><span>Livraison</span><span id="cart-shipping">4,90 €</span></div>
+      <div class="flex items-center justify-between font-heading font-extrabold text-xl mt-3"><span>Total</span><span id="cart-total">0,00 €</span></div>
+      <p id="cart-sub-note" class="text-[11px] text-stone mt-1 hidden">+ abonnement facturé après activation du tracker</p>
+      <button id="checkout" class="btn btn-dark btn-shine w-full mt-4">Passer la commande <span class="arrow">→</span></button>
+      <p class="text-center text-[11px] text-stone mt-3">Paiement sécurisé · Satisfait ou remboursé 30 jours</p>
+    </div>
+  </aside>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-[100] bg-ink text-cream rounded-full px-5 py-3 text-sm font-semibold shadow-lift flex items-center gap-3 whitespace-nowrap" role="status" aria-live="polite">
+    <span class="w-6 h-6 rounded-full bg-sage grid place-items-center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+    <span id="toast-msg">Ajouté au panier</span>
+  </div>
+
+  <!-- Checkout modal (demo) -->
+  <div id="checkout-modal" class="fixed inset-0 z-[110] hidden items-center justify-center p-4 bg-ink/60 backdrop-blur-sm">
+    <div class="card max-w-md w-full p-8 text-center">
+      <div class="w-16 h-16 rounded-full bg-sage/15 text-sage-dark grid place-items-center mx-auto"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+      <h3 class="font-heading font-bold text-2xl mt-5">Commande de démonstration</h3>
+      <p class="text-sm text-stone mt-3 leading-relaxed">Ce site est une maquette interactive. Connectez ici votre solution de paiement (Stripe, Shopify, PayPal…) pour encaisser de vraies commandes.</p>
+      <button id="close-modal" class="btn btn-dark w-full mt-6">Compris</button>
+    </div>
+  </div>
+
+  <!-- ========== SCRIPTS ========== -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/MotionPathPlugin.min.js"></script>
+
+  <script>
+    /* ---------- Utilities ---------- */
+    const fmt = n => n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+    const $ = (s, r = document) => r.querySelector(s);
+    const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let toastTimer;
+    function showToast(msg) {
+      $('#toast-msg').textContent = msg;
+      $('#toast').classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => $('#toast').classList.remove('show'), 2600);
+    }
+
+    /* ---------- Nav ---------- */
+    const nav = $('#nav');
+    const menuBtn = $('#menu-btn');
+    const mobileMenu = $('#mobile-menu');
+    window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 24), { passive: true });
+    menuBtn.addEventListener('click', () => {
+      const open = mobileMenu.classList.toggle('hidden') === false;
+      menuBtn.setAttribute('aria-expanded', String(open));
+    });
+    $$('#mobile-menu a').forEach(a => a.addEventListener('click', () => { mobileMenu.classList.add('hidden'); menuBtn.setAttribute('aria-expanded', 'false'); }));
+
+    // Active nav link via IntersectionObserver
+    const sections = ['produit', 'app', 'fonctionnalites', 'guide', 'avis', 'faq'].map(id => document.getElementById(id)).filter(Boolean);
+    const navLinks = $$('.nav-link');
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          navLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + e.target.id));
+        }
+      });
+    }, { rootMargin: '-40% 0px -55% 0px' });
+    sections.forEach(s => io.observe(s));
+
+    /* ---------- Live seconds in hero ---------- */
+    setInterval(() => { const el = $('#live-seconds'); if (el) el.textContent = 8 + Math.floor(Math.random() * 10); }, 3000);
+
+    /* ---------- Color swatches (shared state) ---------- */
+    const colorState = { color: '#141414', name: 'Noir', text: '#d9d9d9' };
+    const colorListeners = [];
+    function setColor({ color, name, text }, source) {
+      Object.assign(colorState, { color, name, text });
+      document.documentElement.style.setProperty('--device', color);
+      document.documentElement.style.setProperty('--device-text', text);
+      $$('.device').forEach(d => { d.style.setProperty('--device', color); d.style.setProperty('--device-text', text); });
+      $('#color-name').textContent = name;
+      $('#offer-color-name').textContent = name;
+      $$('#hero-swatches .swatch, #offer-swatches .swatch').forEach(s => {
+        const active = s.dataset.color === color;
+        s.classList.toggle('active', active);
+        s.setAttribute('aria-checked', String(active));
+      });
+      colorListeners.forEach(fn => fn(colorState));
+    }
+    $$('#hero-swatches .swatch, #offer-swatches .swatch').forEach(s => {
+      s.addEventListener('click', () => setColor({ color: s.dataset.color, name: s.dataset.name, text: s.dataset.text }));
+    });
+
+    /* ---------- Plans toggle ---------- */
+    $$('.plan-toggle button').forEach(btn => btn.addEventListener('click', () => {
+      $$('.plan-toggle button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const p = btn.dataset.period;
+      $$('.price').forEach(el => {
+        const target = el.dataset[p];
+        if (window.gsap && !reduced) {
+          gsap.fromTo(el, { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: .35, ease: 'power2.out', onStart: () => el.textContent = target });
+        } else el.textContent = target;
+      });
+      $$('.billing').forEach(el => el.textContent = el.dataset[p]);
+      $$('.add-to-cart[data-plan]').forEach(b => {
+        b.dataset.price = $(`.price`, b.closest('article')).dataset[p].replace(',', '.');
+        b.dataset.period = p;
+      });
+    }));
+
+    /* ---------- Cart ---------- */
+    const CART_KEY = 'nova-cart-v1';
+    let cart = [];
+    try { cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]'); } catch (e) { cart = []; }
+    const FREE_SHIP = 59, SHIP = 4.90;
+
+    function saveCart() { try { localStorage.setItem(CART_KEY, JSON.stringify(cart)); } catch (e) {} }
+
+    function renderCart() {
+      const list = $('#cart-items');
+      const count = cart.reduce((n, i) => n + i.qty, 0);
+      const badge = $('#cart-count');
+      badge.textContent = count;
+      badge.style.transform = count ? 'scale(1)' : 'scale(0)';
+
+      if (!cart.length) {
+        list.innerHTML = `<div class="h-full grid place-items-center text-center text-stone text-sm py-16">
+          <div><div class="w-16 h-16 rounded-full bg-sand grid place-items-center mx-auto mb-4"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg></div>
+          Votre panier est vide.<br><a href="#offre" class="font-semibold text-ink underline mt-2 inline-block" onclick="closeCart()">Découvrir le tracker NOVA</a></div></div>`;
+      } else {
+        list.innerHTML = cart.map(i => `
+          <div class="flex items-center gap-3 bg-white rounded-2xl p-3 border border-ink/5">
+            <div class="w-14 h-14 rounded-xl bg-sand grid place-items-center shrink-0">
+              ${i.id === 'tracker' ? `<span class="block w-9 h-6 rounded-lg" style="background:${i.color || '#141414'}; box-shadow: inset 0 -2px 4px rgba(0,0,0,.3)"></span>` :
+                i.id === 'collar' ? `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#121212" stroke-width="1.8"><ellipse cx="12" cy="12" rx="9" ry="6"/></svg>` :
+                `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3F8A4D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>`}
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-semibold truncate">${i.name}</div>
+              <div class="text-xs text-stone">${i.variant ? i.variant + ' · ' : ''}${i.plan ? (i.period === 'year' ? 'facturé annuellement' : 'facturé mensuellement') : fmt(i.price)}</div>
+            </div>
+            ${i.plan ? `<div class="text-sm font-bold">${fmt(i.price)}<span class="text-[10px] text-stone font-medium">/mois</span></div>` : `
+            <div class="flex items-center gap-1">
+              <button class="w-7 h-7 rounded-full bg-sand hover:bg-ink hover:text-cream transition cursor-pointer" aria-label="Diminuer" onclick="changeQty('${i.key}', -1)">−</button>
+              <span class="w-6 text-center text-sm font-semibold">${i.qty}</span>
+              <button class="w-7 h-7 rounded-full bg-sand hover:bg-ink hover:text-cream transition cursor-pointer" aria-label="Augmenter" onclick="changeQty('${i.key}', 1)">+</button>
+            </div>`}
+            <button class="w-8 h-8 rounded-full hover:bg-sand grid place-items-center text-stone cursor-pointer" aria-label="Retirer" onclick="removeItem('${i.key}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+          </div>`).join('');
+      }
+
+      const goods = cart.filter(i => !i.plan).reduce((s, i) => s + i.price * i.qty, 0);
+      const hasPlan = cart.some(i => i.plan);
+      const shipping = goods === 0 || goods >= FREE_SHIP ? 0 : SHIP;
+      $('#cart-subtotal').textContent = fmt(goods);
+      $('#cart-shipping').textContent = shipping ? fmt(shipping) : 'Offerte';
+      $('#cart-total').textContent = fmt(goods + shipping);
+      $('#cart-sub-note').classList.toggle('hidden', !hasPlan);
+      const pct = Math.min(100, Math.floor(goods / FREE_SHIP * 100));
+      $('#ship-bar').style.width = pct + '%';
+      $('#ship-pct').textContent = pct + ' %';
+      $('#ship-msg').textContent = goods >= FREE_SHIP ? 'Livraison offerte débloquée !' : `Plus que ${fmt(FREE_SHIP - goods)} pour la livraison offerte`;
+      $('#checkout').disabled = !cart.length;
+      $('#checkout').classList.toggle('opacity-50', !cart.length);
+    }
+
+    function addToCart(btn) {
+      const id = btn.dataset.id;
+      const price = parseFloat(btn.dataset.price);
+      const variant = btn.dataset.variantFrom ? $(btn.dataset.variantFrom).textContent.trim() : '';
+      const plan = btn.dataset.plan || '';
+      const period = btn.dataset.period || 'month';
+      const key = plan ? 'plan' : (id + (variant ? '-' + variant : ''));
+      const existing = cart.find(i => i.key === key);
+      if (plan) {
+        const item = { key, id, name: btn.dataset.name, price, qty: 1, plan, period };
+        if (existing) Object.assign(existing, item); else cart.push(item);
+        showToast(`Abonnement ${plan === 'premium' ? 'Premium' : 'Basic'} sélectionné`);
+      } else if (existing) {
+        existing.qty += 1;
+        showToast(`${btn.dataset.name} · quantité ${existing.qty}`);
+      } else {
+        cart.push({ key, id, name: btn.dataset.name, price, qty: 1, variant, color: id === 'tracker' ? colorState.color : '' });
+        showToast(`${btn.dataset.name}${variant ? ' (' + variant + ')' : ''} ajouté au panier`);
+      }
+      saveCart(); renderCart();
+      // Bounce the cart icon
+      if (window.gsap && !reduced) gsap.fromTo('#open-cart', { scale: 1 }, { scale: 1.25, duration: .18, yoyo: true, repeat: 1, ease: 'power2.out' });
+      if (id === 'tracker') openCart();
+    }
+    window.changeQty = (key, d) => { const it = cart.find(i => i.key === key); if (!it) return; it.qty += d; if (it.qty <= 0) cart = cart.filter(i => i.key !== key); saveCart(); renderCart(); };
+    window.removeItem = key => { cart = cart.filter(i => i.key !== key); saveCart(); renderCart(); };
+    $$('.add-to-cart').forEach(b => b.addEventListener('click', () => addToCart(b)));
+
+    function openCart() { $('#cart-drawer').classList.add('open'); $('#cart-backdrop').classList.add('open'); document.body.style.overflow = 'hidden'; $('#close-cart').focus(); }
+    window.closeCart = () => { $('#cart-drawer').classList.remove('open'); $('#cart-backdrop').classList.remove('open'); document.body.style.overflow = ''; };
+    $('#open-cart').addEventListener('click', openCart);
+    $('#close-cart').addEventListener('click', closeCart);
+    $('#cart-backdrop').addEventListener('click', closeCart);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeCart(); $('#checkout-modal').classList.add('hidden'); $('#checkout-modal').classList.remove('flex'); } });
+    $('#checkout').addEventListener('click', () => { if (!cart.length) return; closeCart(); const m = $('#checkout-modal'); m.classList.remove('hidden'); m.classList.add('flex'); });
+    $('#close-modal').addEventListener('click', () => { const m = $('#checkout-modal'); m.classList.add('hidden'); m.classList.remove('flex'); });
+    renderCart();
+
+    /* ---------- GSAP animations ---------- */
+    if (window.gsap) {
+      gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
+
+      // Scroll progress bar
+      gsap.to('#progress', { scaleX: 1, ease: 'none', scrollTrigger: { start: 0, end: 'max', scrub: .3 } });
+
+      const mm = gsap.matchMedia();
+      mm.add('(prefers-reduced-motion: no-preference)', () => {
+        // Hero entrance
+        gsap.from('.hero-reveal', { y: 30, opacity: 0, duration: .9, stagger: .12, ease: 'power3.out', delay: .1 });
+        gsap.from('.hero-float', { scale: .8, opacity: 0, duration: .8, stagger: .2, ease: 'back.out(1.6)', delay: .9 });
+        gsap.from('.mtn-1', { yPercent: 18, duration: 1.4, ease: 'power3.out' });
+        gsap.from('.mtn-2', { yPercent: 25, duration: 1.4, ease: 'power3.out', delay: .1 });
+        gsap.from('.mtn-3', { yPercent: 35, duration: 1.4, ease: 'power3.out', delay: .2 });
+
+        // Parallax mountains
+        gsap.to('.mtn-1', { yPercent: -12, ease: 'none', scrollTrigger: { trigger: 'main', start: 'top top', end: '60% top', scrub: true } });
+        gsap.to('.mtn-2', { yPercent: -6, ease: 'none', scrollTrigger: { trigger: 'main', start: 'top top', end: '60% top', scrub: true } });
+
+        // Generic reveals
+        $$('.reveal').forEach(el => {
+          gsap.from(el, { y: 36, opacity: 0, duration: .8, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 88%' } });
+        });
+        // Grid stagger for features / steps / benefits / reviews
+        ['.features', '.steps', '.benefits', '.reviews', '.plans', '.faq-list'].forEach(sel => {
+          const parent = $(sel); if (!parent) return;
+          gsap.from(parent.children, { opacity: 0, scale: .94, y: 16, duration: .45, stagger: { each: .07, from: 'start' }, ease: 'back.out(1.4)', scrollTrigger: { trigger: parent, start: 'top 85%' } });
+        });
+        // Callouts handwriting pop
+        gsap.from('.callout-item', { opacity: 0, scale: .8, duration: .6, stagger: .15, ease: 'back.out(2)', scrollTrigger: { trigger: '#produit', start: 'top 70%' } });
+        // Activity ring + bars
+        gsap.to('#ring', { strokeDashoffset: 314 * (1 - .64), duration: 1.6, ease: 'power3.out', scrollTrigger: { trigger: '#ring', start: 'top 85%' } });
+        gsap.from('.bar', { scaleY: 0, duration: .8, stagger: .08, ease: 'power3.out', scrollTrigger: { trigger: '.bar', start: 'top 90%' } });
+
+        // Pet marker follows the route on the phone
+        gsap.to('#pet-marker', {
+          duration: 9, repeat: -1, repeatDelay: 1.2, ease: 'power1.inOut',
+          motionPath: { path: '#route', align: '#route', alignOrigin: [.5, .5] },
+          scrollTrigger: { trigger: '.phone', start: 'top 90%', toggleActions: 'play pause resume pause' }
+        });
+        return () => {};
+      });
+
+      // Counters (run regardless of motion preference, but instantly when reduced)
+      $$('[data-count]').forEach(el => {
+        const target = parseFloat(el.dataset.count);
+        const format = v => el.dataset.format === 'k' ? Math.round(v).toLocaleString('fr-FR').replace(/ |\s/g, ' ') : Math.round(v);
+        if (reduced) { el.textContent = format(target); return; }
+        const obj = { v: 0 };
+        gsap.to(obj, { v: target, duration: 1.6, ease: 'power3.out', onUpdate: () => el.textContent = format(obj.v), scrollTrigger: { trigger: el, start: 'top 92%' } });
+      });
+    } else {
+      // No GSAP: show final states
+      $$('[data-count]').forEach(el => el.textContent = el.dataset.count);
+      $('#ring').style.strokeDashoffset = 314 * (1 - .64);
+    }
+  </script>
+
+  <!-- ---------- Three.js product viewer ---------- -->
+  <script type="module">
+    await new Promise(r => { if (document.readyState === 'complete') setTimeout(r, 350); else window.addEventListener('load', () => setTimeout(r, 350), { once: true }); });
+    try {
+      const THREE = await import('three');
+      const { OrbitControls } = await import('three/addons/controls/OrbitControls.js');
+      const { RoundedBoxGeometry } = await import('three/addons/geometries/RoundedBoxGeometry.js');
+      const { RoomEnvironment } = await import('three/addons/environments/RoomEnvironment.js');
+
+      const container = document.getElementById('hero-3d');
+      const fallback = document.getElementById('device-fallback');
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.05;
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFShadowMap;
+      renderer.domElement.setAttribute('role', 'img');
+      renderer.domElement.setAttribute('aria-label', 'Visionneuse 3D interactive du tracker GPS NOVA. Faites glisser pour le faire tourner.');
+      container.appendChild(renderer.domElement);
+
+      const scene = new THREE.Scene();
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+      const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 50);
+      camera.position.set(2.0, 1.4, 5.9);
+
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.06;
+      controls.enablePan = false;
+      controls.enableZoom = false;
+      controls.minPolarAngle = Math.PI * 0.2;
+      controls.maxPolarAngle = Math.PI * 0.62;
+      controls.autoRotate = !reducedMotion;
+      controls.autoRotateSpeed = 1.6;
+      controls.target.set(0, -0.15, 0);
+
+      // Lights
+      scene.add(new THREE.HemisphereLight(0xfff4e6, 0x6b6450, 0.6));
+      const key = new THREE.DirectionalLight(0xffffff, 2.2);
+      key.position.set(3, 5, 4); key.castShadow = true;
+      key.shadow.mapSize.set(1024, 1024); key.shadow.radius = 6;
+      key.shadow.camera.left = -3; key.shadow.camera.right = 3; key.shadow.camera.top = 3; key.shadow.camera.bottom = -3;
+      scene.add(key);
+      const rim = new THREE.DirectionalLight(0xd98b3a, 1.2);
+      rim.position.set(-4, 2, -3);
+      scene.add(rim);
+
+      // ---- Device ----
+      const device = new THREE.Group();
+      scene.add(device);
+
+      const bodyMat = new THREE.MeshPhysicalMaterial({ color: 0x141414, roughness: 0.42, metalness: 0.05, clearcoat: 0.6, clearcoatRoughness: 0.3 });
+      const body = new THREE.Mesh(new RoundedBoxGeometry(1.9, 1.05, 0.62, 6, 0.22), bodyMat);
+      body.castShadow = true; body.receiveShadow = true;
+      device.add(body);
+
+      // Top plate (two-tone cap like the photo)
+      const capMat = new THREE.MeshPhysicalMaterial({ color: 0x2a2a2a, roughness: 0.55, metalness: 0.1 });
+      const cap = new THREE.Mesh(new RoundedBoxGeometry(1.55, 0.14, 0.5, 4, 0.06), capMat);
+      cap.position.set(0, 0.56, 0);
+      device.add(cap);
+
+      // Front face texture: NOVA logo + LED
+      function makeFaceTexture(bg, text) {
+        const c = document.createElement('canvas'); c.width = 1024; c.height = 560;
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = bg; ctx.fillRect(0, 0, c.width, c.height);
+        ctx.fillStyle = text; ctx.globalAlpha = 0.9;
+        ctx.font = '800 150px Manrope, Inter, system-ui, sans-serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        const word = 'NOVA', spacing = 34;
+        let total = 0; for (const ch of word) total += ctx.measureText(ch).width + spacing; total -= spacing;
+        let x = c.width / 2 - total / 2;
+        for (const ch of word) { const w = ctx.measureText(ch).width; ctx.fillText(ch, x + w / 2, 230); x += w + spacing; }
+        ctx.globalAlpha = 1;
+        // LED bar
+        ctx.shadowColor = '#ffffff'; ctx.shadowBlur = 40;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath(); ctx.roundRect(c.width / 2 - 70, 380, 140, 22, 11); ctx.fill();
+        const tex = new THREE.CanvasTexture(c);
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        return tex;
+      }
+      const faceMat = new THREE.MeshPhysicalMaterial({ map: makeFaceTexture('#141414', '#d9d9d9'), roughness: 0.4, clearcoat: 0.5, emissive: 0xffffff, emissiveIntensity: 0.0 });
+      const face = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.86), faceMat);
+      face.position.set(0, -0.03, 0.312);
+      device.add(face);
+
+      // LED glow (emissive bar)
+      const ledMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.95 });
+      const led = new THREE.Mesh(new RoundedBoxGeometry(0.22, 0.035, 0.02, 2, 0.015), ledMat);
+      led.position.set(0, -0.26, 0.325);
+      device.add(led);
+
+      // Side paw button
+      const side = new THREE.Mesh(new RoundedBoxGeometry(0.08, 0.42, 0.18, 3, 0.03), capMat);
+      side.position.set(0.98, 0.02, 0.05);
+      device.add(side);
+
+      // ---- Collar strap (nylon, flattened ring) ----
+      function makeStrapTexture() {
+        const c = document.createElement('canvas'); c.width = 512; c.height = 128;
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = '#17171a'; ctx.fillRect(0, 0, 512, 128);
+        // weave
+        for (let y = 0; y < 128; y += 6) { ctx.fillStyle = (y / 6) % 2 ? '#1e1e22' : '#121215'; ctx.fillRect(0, y, 512, 3); }
+        // reflective stitches
+        ctx.fillStyle = '#9a9a9a'; for (let x = 0; x < 512; x += 24) { ctx.fillRect(x, 30, 12, 4); ctx.fillRect(x, 94, 12, 4); }
+        const t = new THREE.CanvasTexture(c); t.wrapS = THREE.RepeatWrapping; t.repeat.set(9, 1); t.colorSpace = THREE.SRGBColorSpace;
+        return t;
+      }
+      const strapMat = new THREE.MeshStandardMaterial({ map: makeStrapTexture(), roughness: 0.95, metalness: 0 });
+      const strap = new THREE.Mesh(new THREE.TorusGeometry(1.45, 0.17, 12, 96), strapMat);
+      strap.scale.set(1, 1, 0.42);               // flatten into a band
+      strap.rotation.x = Math.PI / 2;             // horizontal loop like a collar
+      strap.position.set(0, -0.08, -1.3);         // device sits on the front of the loop
+      strap.castShadow = true;
+      scene.add(strap);
+      // Buckle
+      const buckle = new THREE.Mesh(new RoundedBoxGeometry(0.42, 0.34, 0.26, 3, 0.05), capMat);
+      buckle.position.set(0.25, -0.08, -2.72);
+      scene.add(buckle);
+
+      // Ground shadow catcher
+      const ground = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), new THREE.ShadowMaterial({ opacity: 0.22 }));
+      ground.rotation.x = -Math.PI / 2; ground.position.y = -0.95; ground.receiveShadow = true;
+      scene.add(ground);
+
+      // Resize
+      function resize() {
+        const { clientWidth: w, clientHeight: h } = container;
+        if (!w || !h) return;
+        renderer.setSize(w, h, false);
+        camera.aspect = w / h; camera.updateProjectionMatrix();
+      }
+      new ResizeObserver(resize).observe(container);
+      resize();
+
+      // Colour changes from the swatches
+      const tmp = new THREE.Color();
+      colorListeners.push(({ color, text }) => {
+        tmp.set(color);
+        if (window.gsap && !reducedMotion) gsap.to(bodyMat.color, { r: tmp.r, g: tmp.g, b: tmp.b, duration: .6, ease: 'power2.out' });
+        else bodyMat.color.copy(tmp);
+        const isLight = tmp.getHSL({}).l > 0.6;
+        capMat.color.set(isLight ? '#d9d2c2' : '#2a2a2a');
+        faceMat.map?.dispose();
+        faceMat.map = makeFaceTexture(color, text);
+        faceMat.needsUpdate = true;
+        if (window.gsap && !reducedMotion) gsap.fromTo(device.rotation, { y: device.rotation.y }, { y: device.rotation.y + Math.PI * 2, duration: 1.1, ease: 'power3.inOut' });
+      });
+
+      // Render loop (paused when off-screen)
+      let visible = true;
+      new IntersectionObserver(([e]) => { visible = e.isIntersecting; }, { threshold: 0.05 }).observe(container);
+      const clock = new THREE.Clock();
+      let t = 0;
+      function animate() {
+        requestAnimationFrame(animate);
+        if (!visible) return;
+        const dt = clock.getDelta(); t += dt;
+        if (!reducedMotion) {
+          device.position.y = Math.sin(t * 1.2) * 0.05;
+          strap.position.y = -0.08 + Math.sin(t * 1.2) * 0.05;
+          buckle.position.y = strap.position.y;
+          ledMat.opacity = 0.65 + Math.sin(t * 3) * 0.35;
+        }
+        controls.update();
+        renderer.render(scene, camera);
+      }
+      animate();
+      fallback.style.display = 'none';
+    } catch (err) {
+      console.warn('3D viewer unavailable, using static fallback.', err);
+    }
+  </script>
+</body>
+</html>
